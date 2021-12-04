@@ -1,0 +1,51 @@
+version: "3.7"
+services:
+    app:
+        build:
+            args:
+                user: ntt
+                uid: 1000
+            context: ./
+            dockerfile: Dockerfile
+        image: aspire-app
+        restart: unless-stopped
+        working_dir: /var/www/
+        volumes:
+            - ./:/var/www
+        networks:
+            - mynetwork
+
+    nginx:
+        image: nginx:alpine
+        restart: unless-stopped
+        ports:
+            - 8000:80
+        volumes:
+            - ./:/var/www
+            - ./nginx/conf.d:/etc/nginx/conf.d/
+        networks:
+            - mynetwork
+
+    redis:
+        image: redis:5-alpine
+        restart: unless-stopped
+        command: redis-server
+        ports:
+            - 6379:6379
+
+    db:
+        image: mysql:8
+        restart: unless-stopped
+        environment:
+            MYSQL_DATABASE: aspire
+            MYSQL_ROOT_PASSWORD: 123456?a
+            MYSQL_PASSWORD: 123456
+            MYSQL_USER: admin
+        ports:
+            - 3306:3306
+        networks:
+            - mynetwork
+
+networks:
+    mynetwork:
+        driver: bridge
